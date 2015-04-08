@@ -12,6 +12,7 @@ const eventName = "foobar"
 type eventData struct {
     t *testing.T
     c chan bool
+    m string
 }
 
 func (l *eventListener) Trigger(event string, data interface{}) {
@@ -32,8 +33,29 @@ func (l *dontListen) Trigger(event string, data interface{}) {
     panic("Type assertion failed")
 }
 
+type waitListener struct {}
+
+func (l *waitListener) Trigger(event string, data interface{}) {
+    if c, ok := data.(*eventData); ok {
+        c.m = "foobar"
+        return
+    }
+    panic("Type assertion failed")
+}
+
+func TestTriggerAndWait(t *testing.T) {
+    data := &eventData{t, nil, ""}
+    em := New()
+    el := new(waitListener)
+
+    em.AttachListener(eventName, el)
+    em.TriggerAndWait(eventName, data)
+
+    assert.Equal(t, "foobar", data.m)
+}
+
 func TestTrigger(t *testing.T) {
-    data := &eventData{t, make(chan bool)}
+    data := &eventData{t, make(chan bool), ""}
     em := New()
     el := new(eventListener)
 
@@ -44,7 +66,7 @@ func TestTrigger(t *testing.T) {
 }
 
 func TestDetach(t *testing.T) {
-    data := &eventData{t, make(chan bool)}
+    data := &eventData{t, make(chan bool), ""}
     em := New()
     el := new(dontListen)
 

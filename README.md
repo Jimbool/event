@@ -27,7 +27,9 @@ func (l *eventListener) Trigger(event string, data interface{}) {
 func main() {
     em := event.New()
     em.AttachListener("foobar", l)
-    em.Trigger("foobar", "data")
+
+    // TriggerAndWait blocks until all listeners are finished
+    em.TriggerAndWait("foobar", "data")
 }
 ```
 
@@ -58,6 +60,9 @@ func main() {
     data := &eventData{make(chan bool)}
     em := event.New()
     em.AttachListener("foobar", l)
+
+    // Trigger does not wait for listeners to finish.
+    // Use channels instead to keep things in sync.
     em.Trigger("foobar", data)
 
     fmt.Println(<- data.c)

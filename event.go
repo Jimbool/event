@@ -1,4 +1,5 @@
 package event
+import "sync"
 
 type Listener interface {
     Trigger(event string, data interface{})
@@ -40,4 +41,20 @@ func (em *eventManager) Trigger(event string, data interface{}) {
     for _, listener := range em.listeners[event] {
         go listener.Trigger(event, data)
     }
+}
+
+
+func (em *eventManager) TriggerAndWait(event string, data interface{}) {
+    wg := new(sync.WaitGroup)
+    if em.listeners[event] == nil {
+        return
+    }
+    for _, listener := range em.listeners[event] {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            listener.Trigger(event, data)
+        }()
+    }
+    wg.Wait()
 }
