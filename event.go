@@ -5,17 +5,17 @@ type Listener interface {
     Trigger(event string, data interface{})
 }
 
-type eventManager struct {
+type EventManager struct {
     listeners map[string][]Listener
 }
 
-func New() *eventManager {
-    return &eventManager{
+func New() *EventManager {
+    return &EventManager{
         listeners: make(map[string][]Listener, 0),
     }
 }
 
-func (em *eventManager) AttachListener(event string, listener Listener) {
+func (em *EventManager) AttachListener(event string, listener Listener) {
     if em.listeners[event] == nil {
         em.listeners[event] = make([]Listener,0)
     }
@@ -23,7 +23,7 @@ func (em *eventManager) AttachListener(event string, listener Listener) {
     em.listeners[event] = append(em.listeners[event], listener)
 }
 
-func (em *eventManager) DetachListener(event string, listener Listener) {
+func (em *EventManager) DetachListener(event string, listener Listener) {
     if em.listeners[event] == nil {
         return
     }
@@ -34,7 +34,7 @@ func (em *eventManager) DetachListener(event string, listener Listener) {
     }
 }
 
-func (em *eventManager) Trigger(event string, data interface{}) {
+func (em *EventManager) Trigger(event string, data interface{}) {
     if em.listeners[event] == nil {
         return
     }
@@ -44,7 +44,7 @@ func (em *eventManager) Trigger(event string, data interface{}) {
 }
 
 
-func (em *eventManager) TriggerAndWait(event string, data interface{}) {
+func (em *EventManager) TriggerAndWait(event string, data interface{}) {
     wg := new(sync.WaitGroup)
     if em.listeners[event] == nil {
         return
